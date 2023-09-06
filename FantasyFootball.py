@@ -1,6 +1,6 @@
 
-#create a program that maps the key statistics of Yardage, total fantasy points, catches, carries, and targets. 
-#then try to map these datapoints according to each year, and find any corrilations between years in league and increase in production
+#Create a program that maps the key statistics of players in the Quarterback, Runningback, and Widereciever positions.
+#Then try to map these datapoints according to each year, and find any corrilations between years in league and increase in production.
 
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
@@ -16,7 +16,7 @@ pd.options.mode.chained_assignment = None  # default='warn'
 
 player = {}
 #BeautifulSoup syntax for scaping information, (find a way to iterate through the webpages changing only the year somehow)
-#repeat this for passing players 
+#Repeat this for passing players 
 
 #Current in use Scrape
 rush_URL_2022 = 'https://www.pro-football-reference.com/years/2022/rushing.htm'
