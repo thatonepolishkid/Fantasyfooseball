@@ -192,6 +192,7 @@ def create_radar_chart(ax, angles, player_data, color='blue'):
 
         return ax
 
+#Not sure exactly what is going on that the points are not being plotted on the graph, look into running a debugger to try and find out whats going wrong.
 
 #Starting with the AFC East
 #Creates the figure
