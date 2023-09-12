@@ -157,6 +157,9 @@ angles = np.linspace(0, 2*np.pi, len(categories) + 1) + offset
 #filtering by RB's who have over 400 yds
 data_radar_filtered = data_radar[data_radar['Yds'] > 400]
 
+#Changes values into a percentage so that they properly plot within the scope of the Radar Chart
+for i in categories:
+    data_radar_filtered[i + '_Rank'] = data_radar_filtered[i].rank(pct=True)
 
 #Helper function to get player data based on team
 def get_rb_data(data, team):
@@ -165,34 +168,29 @@ def get_rb_data(data, team):
 #creating the function to plot data
 def create_radar_chart(ax, angles, player_data, color='blue'):
     
-
-        #This is where I think the Error is occuring that I am not properly filling in the information into the graph.
-
-
-        ax.plot(angles, np.append(player_data[-(len(angles)-1):],
+    ax.plot(angles, np.append(player_data[-(len(angles)-1):],
                     player_data[-(len(angles)-1)]), color='red', linewidth=2)
-        ax.fill(angles, np.append(player_data[-(len(angles)-1):],
+    ax.fill(angles, np.append(player_data[-(len(angles)-1):],
                     player_data[-(len(angles)-1)]), color=color, alpha=0.2)
         
-        #Set category labels
-        ax.set_xticks(angles[:-1])
-        ax.set_xticklabels(categories)
+    #Set category labels
+    ax.set_xticks(angles[:-1])
+    ax.set_xticklabels(categories)
 
-        #Removes radial labels
-        ax.set_yticklabels([])
+    #Removes radial labels
+    ax.set_yticklabels([])
 
-        #Populates the header with player Name
-        ax.text(np.pi/2, 1.7, player_data[0], ha='center', va='center', size=18, color=color)
+    #Populates the header with player Name
+    ax.text(np.pi/2, 1.7, player_data[0], ha='center', va='center', size=18, color=color)
 
-        #White grid
-        ax.grid(color='white', linewidth=1.5)
+    #White grid
+    ax.grid(color='white', linewidth=1.5)
 
-        #Sets axis limits
-        ax.set(xlim=(0, 2*np.pi), ylim=(0, 1))
+    #Sets axis limits
+    ax.set(xlim=(0, 2*np.pi), ylim=(0, 1))
 
-        return ax
+    return ax
 
-#Not sure exactly what is going on that the points are not being plotted on the graph, look into running a debugger to try and find out whats going wrong.
 
 #Starting with the AFC East
 #Creates the figure
