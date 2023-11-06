@@ -117,5 +117,6 @@ rush_dicts = [rush_2018, rush_2019, rush_2020, rush_2021, rush_2022]
 receiver_dicts = [receiver_2018, receiver_2019, receiver_2020, receiver_2021, receiver_2022]
 quarterback_dicts = [quarterback_2018, quarterback_2019, quarterback_2020, quarterback_2021, quarterback_2022]
 
-def pd_to_excel():
-   pass
+def pd_to_excel(dictionary, path):
+   for dict in dictionary:
+       data = pd.DataFrame(dict, columns=col_head_rush_2022[1:])

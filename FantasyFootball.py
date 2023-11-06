@@ -164,8 +164,7 @@ angles = np.linspace(0, 2*np.pi, len(categories) + 1) + offset
 
 #filtering by RB's who have over 400 yds
 data_radar_filtered = data_radar[data_radar['Yds'] > 400]
-print(data_radar_filtered.head(100))
-print(data_radar_filtered.head(100))
+
 
 #creating columns with percentile rank so that it plots onto the radar chart instead of way off like I was doing beforehand!
 for i in categories:
