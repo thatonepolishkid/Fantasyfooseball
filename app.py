@@ -38,8 +38,6 @@ rush_HTML_2018 = urlopen(rush_URL_2018)
 
 #Current in use scrape
 rush_stats_2022 = BeautifulSoup(rush_HTML_2022, 'html.parser')
-
-
 rush_stats_2021 = BeautifulSoup(rush_HTML_2021, 'html.parser')
 rush_stats_2020 = BeautifulSoup(rush_HTML_2020, 'html.parser')
 rush_stats_2019 = BeautifulSoup(rush_HTML_2019, 'html.parser')
@@ -50,6 +48,10 @@ rush_stats_2018 = BeautifulSoup(rush_HTML_2018, 'html.parser')
 col_head_rush_2022 = rush_stats_2022.findAll('tr')[1]
 col_head_rush_2022 = [i.getText() for i in col_head_rush_2022.findAll('th')]
 
+def col_head_maker(scraped_stats):
+    '''This function will take one of the scaped websites, and create a header for that year and skill position.'''
+    pass
+
 #Gets table rows
 rows2022 = rush_stats_2022.findAll('tr')[1:]
 
@@ -59,6 +61,9 @@ rb_stats = [
 ]
 print(rb_stats[1])
 
+def row_stat_maker(scraped_stats):
+    '''This function will take the scraped website and create rows for each of the players int he scraped websites.'''
+    pass
 
 #Implement variety and clean up for wide recievers and quarterbacks
 runningback_url = 'https://www.pro-football-reference.com/years/2018/rushing.htm'
