@@ -1,127 +1,140 @@
-"""Change this file into a file that scrapes stats from the internet and then writes it into a MS Excel file.
-   Once it is written into the Excel spreadsheet then I can write it into an SQL Database, and Query from there.
-   Repeat this process for each URL that is scraped in the original app."""
-   
+# Create a program that writes football statistics into an excel files. 
+
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 import pandas as pd
-import numpy as np
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 import re
-import pytest
-import xlsxwriter
-
-
+import time
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
-player = {}
-#BeautifulSoup syntax for scaping information, (find a way to iterate through the webpages changing only the year somehow)
-#repeat this for passing players 
+###!!! Ive fucked up the naming of Receivers and Quarterbacks when I renamed the Dictionaries. Look to fix that next time I work on this.
 
-#Current in use Scrape
-rush_URL_2022 = 'https://www.pro-football-reference.com/years/2022/rushing.htm'
+#creation of dictionaries for each category of player
+rush_year_dict = {}
+pass_year_dict = {}
+receiver_year_dict = {}
 
-
-rush_URL_2021 = 'https://www.pro-football-reference.com/years/2021/rushing.htm'
-rush_URL_2020 = 'https://www.pro-football-reference.com/years/2020/rushing.htm'
-rush_URL_2019 = 'https://www.pro-football-reference.com/years/2019/rushing.htm'
-rush_URL_2018 = 'https://www.pro-football-reference.com/years/2018/rushing.htm'
-
-#Current in use Scrape    
-rush_HTML_2022 = urlopen(rush_URL_2022)
-rush_HTML_2021 = urlopen(rush_URL_2021)
-rush_HTML_2020 = urlopen(rush_URL_2020)
-rush_HTML_2019 = urlopen(rush_URL_2019)
-rush_HTML_2018 = urlopen(rush_URL_2018)
-
-#Current in use scrape
-rush_stats_2022 = BeautifulSoup(rush_HTML_2022, 'html.parser')
-rush_stats_2021 = BeautifulSoup(rush_HTML_2021, 'html.parser')
-rush_stats_2020 = BeautifulSoup(rush_HTML_2020, 'html.parser')
-rush_stats_2019 = BeautifulSoup(rush_HTML_2019, 'html.parser')
-rush_stats_2018 = BeautifulSoup(rush_HTML_2018, 'html.parser')
-
-
-#Finds table headers
-col_head_rush_2022 = rush_stats_2022.findAll('tr')[1]
-col_head_rush_2022 = [i.getText() for i in col_head_rush_2022.findAll('th')]
-
-def col_head_maker(scraped_stats):
-    '''This function will take one of the scaped websites, and create a header for that year and skill position.'''
-    pass
-
-#Gets table rows
-rows2022 = rush_stats_2022.findAll('tr')[1:]
-
-rb_stats = [
-    [col.getText() for col in rows2022[i].findAll('td')]
-    for i in range(len(rows2022))
-]
-print(rb_stats[1])
-
-def row_stat_maker(scraped_stats):
-    '''This function will take the scraped website and create rows for each of the players int he scraped websites.'''
-    pass
-
-#Implement variety and clean up for wide recievers and quarterbacks
-runningback_url = 'https://www.pro-football-reference.com/years/2018/rushing.htm'
-quarterback_url = 'https://www.pro-football-reference.com/years/2018/receiving.htm'
-widereceiver_url = 'https://www.pro-football-reference.com/years/2018/passing.htm'
-
-
-#Implementing this so that I can iterate through the Years and compare yearly stats instead of players head to head.(Eventually)
+#Iterates through and creates a list based on the years
 def year_creation(start_year, end_year):
     return list(range(start_year, end_year + 1))
 years = year_creation(2018, 2023)
-runningback_year_dict = {}
-quarterback_year_dict = {}
-widereceiver_year_dict = {}
+
+#cleans up the * and + characters as well as introducing a new column with the value of year.
+def data_cleanup(data_set, year):
+    data_set['Player'] = data_set['Player'].str.replace('*', '')
+    data_set['Player'] = data_set['Player'].str.replace('+', '')
+    data_set['Year'] = year
+    data_set = (data_set.dropna()).reset_index(drop=True)
+    return data_set
+
+#Implement variety and clean up for wide recievers and quarterbacks
+runningback_url = 'https://www.pro-football-reference.com/years/2018/rushing.htm'
+widereceiver_url = 'https://www.pro-football-reference.com/years/2018/receiving.htm'
+quarterback_url = 'https://www.pro-football-reference.com/years/2018/passing.htm'
 
 
-year = int(runningback_url[45:49:])
+#This works to create the scraped url
+def soupify(year_dict):
+    return BeautifulSoup(urlopen(year_dict), 'html.parser')
 
-'''#Simple while loop that rewrites the year#
-while year <= 2022:
-    years.append(year)
-    year += 1'''
 
+#loops through and rewrites the url string for each year
+for year in years:
+    new_receiver_url = re.sub(r'2018', str(year), widereceiver_url)
+    new_passing_url = re.sub(r'2018', str(year), quarterback_url)
+    new_rush_url = re.sub(r'2018', str(year), runningback_url)
+    rush_year_dict[str(year)] = new_rush_url
+    pass_year_dict[str(year)] = new_passing_url
+    receiver_year_dict[str(year)] = new_receiver_url
+
+
+#Defines empty dictionaries that will hold the information scraped from the website.
+scraped_websites_rush = {}
+scraped_websites_pass = {}
+scraped_websites_receiver = {}
+
+
+#loops through the years dictionary to assign a year to each website scraped(matching the url)
 #Iterates through and renames the links to be scraped.
 for year in years:
-    new_widereceiver_url = re.sub(r'2018', str(year), widereceiver_url)
-    new_quarterback_url = re.sub(r'2018', str(year), quarterback_url)
-    new_runningback_url = re.sub(r'2018', str(year), runningback_url)
-
-    runningback_year_dict[str(year)] = new_runningback_url
-    quarterback_year_dict[str(year)] = new_quarterback_url
-    widereceiver_year_dict[str(year)] = new_widereceiver_url
-
-
-#Not in use yet but in the future maybe create a list that can be iterated through and compared ??
-#use .int() to convert to int and increment, then return back with .str()
-rush_2018 = runningback_year_dict["2018"]
-rush_2019 = runningback_year_dict["2019"]
-rush_2020 = runningback_year_dict["2020"]
-rush_2021 = runningback_year_dict["2021"]
-rush_2022 = runningback_year_dict["2022"]
-receiver_2018 = widereceiver_year_dict["2018"]
-receiver_2019 = widereceiver_year_dict["2019"]
-receiver_2020 = widereceiver_year_dict["2020"]
-receiver_2021 = widereceiver_year_dict["2021"]
-receiver_2022 = widereceiver_year_dict["2022"]
-quarterback_2018 = quarterback_year_dict["2018"]
-quarterback_2019 = quarterback_year_dict["2019"]
-quarterback_2020 = quarterback_year_dict["2020"]
-quarterback_2021 = quarterback_year_dict["2021"]
-quarterback_2022 = quarterback_year_dict["2022"]
+    scraped_rush_url = soupify(rush_year_dict[str(year)])
+    scraped_pass_url = soupify(pass_year_dict[str(year)])
+    scraped_receiver_url = soupify(receiver_year_dict[str(year)])
+    
+    scraped_websites_rush[str(year)] = scraped_rush_url #changed scraped_websites_rush to rush_year_dict
+    scraped_websites_pass[str(year)] = scraped_pass_url #changed scraped_websites_pass to pass_year_dict
+    scraped_websites_receiver[str(year)] = scraped_receiver_url #changed scraped_websites_receiver to receiver_year_dict
+    time.sleep(1)
 
 
-#Combine all of the Dictionaries into more concise variables to iterate over the list.
-rush_dicts = [rush_2018, rush_2019, rush_2020, rush_2021, rush_2022]
-receiver_dicts = [receiver_2018, receiver_2019, receiver_2020, receiver_2021, receiver_2022]
-quarterback_dicts = [quarterback_2018, quarterback_2019, quarterback_2020, quarterback_2021, quarterback_2022]
+'''Breakdown of what this function should do:
+1.) Take in a parameter 'scraped_website' a dictionary and iterate through each value of a given dictionary
+for each value in 'scraped_website' use the pd.DataFrame() built in function of pandas to 
+create a table of data and return it.'''
+    
+#Takes param of identified webpage to be scraped 
+def column_finder(website_data, x):
+    col_scraped = website_data.findAll('tr')[x]
+    col_scraped = [i.getText() for i in col_scraped.findAll('th')] 
+    return col_scraped
+def row_finder(website_data):
+    rows_scraped = website_data.findAll('tr')[1:]
+    rows_scraped = [[col.getText() for col in rows_scraped[i].findAll('td')]
+                    for i in range(len(rows_scraped))]
+    return rows_scraped
 
-def pd_to_excel(dictionary, path):
-   for dict in dictionary:
-       data = pd.DataFrame(dict, columns=col_head_rush_2022[1:])
+# Transform each scraped website into a DataFrame
+rush_data_2018 = pd.DataFrame(row_finder(scraped_websites_rush['2018']), columns=column_finder(scraped_websites_rush['2018'], 1)[1:])
+rush_data_2019 = pd.DataFrame(row_finder(scraped_websites_rush['2019']), columns=column_finder(scraped_websites_rush['2019'], 1)[1:])
+rush_data_2020 = pd.DataFrame(row_finder(scraped_websites_rush['2020']), columns=column_finder(scraped_websites_rush['2020'], 1)[1:])
+rush_data_2021 = pd.DataFrame(row_finder(scraped_websites_rush['2021']), columns=column_finder(scraped_websites_rush['2021'], 1)[1:])
+rush_data_2022 = pd.DataFrame(row_finder(scraped_websites_rush['2022']), columns=column_finder(scraped_websites_rush['2022'], 1)[1:])
+pass_data_2018 = pd.DataFrame(row_finder(scraped_websites_pass['2018']), columns=column_finder(scraped_websites_pass['2018'], 0)[1:])
+pass_data_2019 = pd.DataFrame(row_finder(scraped_websites_pass['2019']), columns=column_finder(scraped_websites_pass['2019'], 0)[1:])
+pass_data_2020 = pd.DataFrame(row_finder(scraped_websites_pass['2020']), columns=column_finder(scraped_websites_pass['2020'], 0)[1:])
+pass_data_2021 = pd.DataFrame(row_finder(scraped_websites_pass['2021']), columns=column_finder(scraped_websites_pass['2021'], 0)[1:])
+pass_data_2022 = pd.DataFrame(row_finder(scraped_websites_pass['2022']), columns=column_finder(scraped_websites_pass['2022'], 0)[1:])
+rec_data_2018 = pd.DataFrame(row_finder(scraped_websites_receiver['2018']), columns=column_finder(scraped_websites_receiver['2018'], 0)[1:])
+rec_data_2019 = pd.DataFrame(row_finder(scraped_websites_receiver['2019']), columns=column_finder(scraped_websites_receiver['2019'], 0)[1:])
+rec_data_2020 = pd.DataFrame(row_finder(scraped_websites_receiver['2020']), columns=column_finder(scraped_websites_receiver['2020'], 0)[1:])
+rec_data_2021 = pd.DataFrame(row_finder(scraped_websites_receiver['2021']), columns=column_finder(scraped_websites_receiver['2021'], 0)[1:])
+rec_data_2022 = pd.DataFrame(row_finder(scraped_websites_receiver['2022']), columns=column_finder(scraped_websites_receiver['2022'], 0)[1:])
+
+# Preliminary data cleanup for rushing data, and concat into one DF
+rush_data_2018 = data_cleanup(rush_data_2018, 2018)
+rush_data_2019 = data_cleanup(rush_data_2019, 2019)
+rush_data_2020 = data_cleanup(rush_data_2020, 2020)
+rush_data_2021 = data_cleanup(rush_data_2021, 2021)
+rush_data_2022 = data_cleanup(rush_data_2022, 2022)
+all_rush_data = pd.concat([rush_data_2018, rush_data_2019, rush_data_2020, rush_data_2021, rush_data_2022])
+
+#Preliminary data cleanup for passing data, and concat into one DF
+pass_data_2018 = data_cleanup(pass_data_2018, 2018)
+pass_data_2019 = data_cleanup(pass_data_2019, 2019)
+pass_data_2020 = data_cleanup(pass_data_2020, 2020)
+pass_data_2021 = data_cleanup(pass_data_2021, 2021)
+pass_data_2022 = data_cleanup(pass_data_2022, 2022)
+all_pass_data = pd.concat([pass_data_2018, pass_data_2019, pass_data_2020, pass_data_2021, pass_data_2022])
+
+#Preliminary data cleanup for receiving data, and concat into one DF
+rec_data_2018 = data_cleanup(rec_data_2018, 2018)
+rec_data_2019 = data_cleanup(rec_data_2019, 2019)
+rec_data_2020 = data_cleanup(rec_data_2020, 2020)
+rec_data_2021 = data_cleanup(rec_data_2021, 2021)
+rec_data_2022 = data_cleanup(rec_data_2022, 2022)
+all_receiver_data = pd.concat([rec_data_2018, rec_data_2019, rec_data_2020, rec_data_2021, rec_data_2022])
+
+def to_excel(DataFrame, excel_file):
+    DataFrame.to_excel(excel_file,
+                             sheet_name='sheet1')
+
+to_excel(all_rush_data, 'rush_stats.xlsx')
+to_excel(all_pass_data, 'passer_stats.xlsx')
+to_excel(all_receiver_data, 'receiver_stats.xlsx')
+
+#Create a database with sql that can be queried for any one given stat based upon the years. I think this would make the whole 
+#process much easier and I could just query based off of year.
+
+#first create the sql database and restructure the data. Then try to index out of that - modifying data will most likely by 
+#much different than modifying with pandas, so give it some time.
