@@ -8,12 +8,14 @@ import time
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
-###!!! Ive fucked up the naming of Receivers and Quarterbacks when I renamed the Dictionaries. Look to fix that next time I work on this.
-
 #creation of dictionaries for each category of player
 rush_year_dict = {}
 pass_year_dict = {}
 receiver_year_dict = {}
+#Defines empty dictionaries that will hold the information scraped from the website.
+scraped_websites_rush = {}
+scraped_websites_pass = {}
+scraped_websites_receiver = {}
 
 #Iterates through and creates a list based on the years
 def year_creation(start_year, end_year):
@@ -33,11 +35,9 @@ runningback_url = 'https://www.pro-football-reference.com/years/2018/rushing.htm
 widereceiver_url = 'https://www.pro-football-reference.com/years/2018/receiving.htm'
 quarterback_url = 'https://www.pro-football-reference.com/years/2018/passing.htm'
 
-
 #This works to create the scraped url
 def soupify(year_dict):
     return BeautifulSoup(urlopen(year_dict), 'html.parser')
-
 
 #loops through and rewrites the url string for each year
 for year in years:
@@ -47,13 +47,6 @@ for year in years:
     rush_year_dict[str(year)] = new_rush_url
     pass_year_dict[str(year)] = new_passing_url
     receiver_year_dict[str(year)] = new_receiver_url
-
-
-#Defines empty dictionaries that will hold the information scraped from the website.
-scraped_websites_rush = {}
-scraped_websites_pass = {}
-scraped_websites_receiver = {}
-
 
 #loops through the years dictionary to assign a year to each website scraped(matching the url)
 #Iterates through and renames the links to be scraped.
@@ -66,12 +59,6 @@ for year in years:
     scraped_websites_pass[str(year)] = scraped_pass_url #changed scraped_websites_pass to pass_year_dict
     scraped_websites_receiver[str(year)] = scraped_receiver_url #changed scraped_websites_receiver to receiver_year_dict
     time.sleep(1)
-
-
-'''Breakdown of what this function should do:
-1.) Take in a parameter 'scraped_website' a dictionary and iterate through each value of a given dictionary
-for each value in 'scraped_website' use the pd.DataFrame() built in function of pandas to 
-create a table of data and return it.'''
     
 #Takes param of identified webpage to be scraped 
 def column_finder(website_data, x):
